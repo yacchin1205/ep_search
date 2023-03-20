@@ -8,7 +8,11 @@
     "url": "http://mclear.co.uk"
   },
   "contributors": [],
-  "dependencies": {},
+  "dependencies": {
+    "minisearch": "^6.0.1",
+    "remove-markdown": "^0.5.0",
+    "solr-client": "^0.10.0-rc10"
+  },
   "engines": {
     "node": ">=12.17.0"
   },

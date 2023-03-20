@@ -6,3 +6,7 @@ exports.eejsBlock_indexWrapper = (hookName, args, cb) => {
   args.content += eejs.require('ep_search/templates/search.html', {}, module);
   return cb();
 };
+
+exports.eejsBlock_styles = (hookName, context) => {
+  context.content += eejs.require('./templates/styles.html', {}, module);
+};

@@ -1,0 +1,41 @@
+.hashview {
+    background-color: white;
+    position: absolute;
+    z-index: 100;
+    width: 100%;
+    bottom: 0;
+    border-top: 1px solid #ccc;
+    padding: 0.5em;
+}
+
+.hashview-collapsed {
+    height: 1em;
+}
+
+.hashview-collapsed .hash-container {
+    display: none;
+}
+
+.hashview-collapsed i {
+    display: none;
+}
+
+.hashview-close {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+}
+
+.hash-container {
+    display: flex;
+}
+
+.hash-text {
+    font-weight: bold;
+}
+
+.hash-link {
+    border: 1px solid #eee;
+    margin: 1em;
+    padding: 1em;
+}

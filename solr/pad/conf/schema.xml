@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema name="pad" version="1.6">
+  <uniqueKey>id</uniqueKey>
+
+  <fieldType name="long" class="solr.TrieLongField" positionIncrementGap="0" docValues="true" precisionStep="0"/>
+  <fieldType name="int" class="solr.TrieIntField" positionIncrementGap="0" docValues="true" precisionStep="0"/>
+  <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true"/>
+  <fieldType name="date" class="solr.TrieDateField" sortMissingLast="true" docValues="true"/>
+  <fieldType name="text_ja" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="false">
+    <analyzer>
+      <tokenizer class="solr.JapaneseTokenizerFactory" mode="normal" discardPunctuation="true"/>
+      <!-- Reduces inflected verbs and adjectives to their base/dictionary forms (辞書形) -->
+      <filter class="solr.JapaneseBaseFormFilterFactory"/>
+      <!-- Removes tokens with certain part-of-speech tags -->
+      <!--
+      <filter class="solr.JapanesePartOfSpeechStopFilterFactory" tags="lang/stoptags_ja.txt" enablePositionIncrements="true"/>
+      -->
+      <!-- Normalizes full-width romaji to half-width and half-width kana to full-width (Unicode NFKC subset) -->
+      <filter class="solr.CJKWidthFilterFactory"/>
+      <!-- Removes common tokens typically not useful for search, but have a negative effect on ranking -->
+      <!--
+      <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_ja.txt" enablePositionIncrements="true" />
+      -->
+      <!-- Normalizes common katakana spelling variations by removing any last long sound character (U+30FC) -->
+      <filter class="solr.JapaneseKatakanaStemFilterFactory" minimumLength="4"/>
+      <!-- Lower-cases romaji characters -->
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+  <field name="_version_" type="long" indexed="true" stored="false"/>
+  <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="_text_" type="text_ja" multiValued="false" indexed="true" required="true" stored="false"/>
+  <field name="atext" type="text_ja" multiValued="false" indexed="true" required="true" stored="false"/>
+  <field name="title" type="text_ja" multiValued="false" indexed="true" required="true" stored="true"/>
+</schema>
