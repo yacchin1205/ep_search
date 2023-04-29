@@ -22,9 +22,9 @@ exports.aceEditEvent = (hook, context) => {
     if ($('#hashview').length === 0) {
         return;
     }
-    let hashes = parser.parse((context.rep || {}).alltext || '');
-    if (myPad) {
-        const myHash = `#${myPad.id}`;
+    let { title, hashes } = parser.parse((context.rep || {}).alltext || '');
+    if (title || myPad) {
+        const myHash = `#${title || myPad.id}`;
         hashes = [myHash].concat(hashes.filter((h) => h.id !== myHash));
     }
     if (currentHashes.length === hashes.length && currentHashes.every((val, index) => val === hashes[index])) {
@@ -38,7 +38,8 @@ exports.aceEditEvent = (hook, context) => {
         const container = $('<div></div>').addClass('hash-container');
         container.append($('<div></div>').text(hash).addClass('hash-text'));
         root.append(container);
-        $.getJSON('/search/?query=' + encodeURIComponent(hash), (data) => {
+        const qhash = `"${hash}"`;
+        $.getJSON('/search/?query=' + encodeURIComponent(qhash), (data) => {
             let empty = true;
             (data.results || []).filter((doc) => doc.id !== clientVars.padId).forEach((doc) => {
                 let value = doc.id;
@@ -50,8 +51,8 @@ exports.aceEditEvent = (hook, context) => {
                 container.append($("<div></div>").append(anchor).addClass('hash-link'));
                 empty = false;
             });
-            if ((data.results || []).every((doc) => encodeURIComponent(doc.id.replace("pad:", "")) !== hash.substring(1)) && clientVars.padId !== hash.substring(1)) {
-                const anchor = $('<a></a>').attr('href', '/p/' + hash.substring(1)).text(hash);
+            if ((data.results || []).every((doc) => doc.title !== hash.substring(1)) && title !== hash.substring(1)) {
+                const anchor = $('<a></a>').attr('href', '/t/' + hash.substring(1)).text(hash);
                 container.append($("<div></div>").append(anchor).addClass('hash-link'));
                 empty = false;
             }
@@ -104,7 +105,10 @@ exports.postToolbarInit = (hook, context) => {
 
 exports.aceGetFilterStack = (hook, context) => {
     const { linestylefilter } = context;
-    return [linestylefilter.getRegexpFilter(/\#\S+/g, ACE_EDITOR_TAG)];
+    return [
+        linestylefilter.getRegexpFilter(/\#\S+/g, ACE_EDITOR_TAG),
+        linestylefilter.getRegexpFilter(/\[\[\S+\]\]/g, ACE_EDITOR_TAG),
+    ];
 };
 
 exports.aceCreateDomLine = (hook, context) => {
@@ -120,9 +124,12 @@ exports.aceCreateDomLine = (hook, context) => {
     if (!searchHash) {
         return;
     }
+    const hash = searchHash.match(/^#(\S+)/);
+    const link = searchHash.match(/^\[\[(\S+)\]\]/);
+    const hashTitle = hash ? hash[1] : link[1];
     return [
         {
-            extraOpenTags: `<a href="/p/${searchHash.substring(1)}">`,
+            extraOpenTags: `<a href="/t/${hashTitle}">`,
             extraCloseTags: '</a>',
             cls: modifiedCls,
         },

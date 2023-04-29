@@ -1,12 +1,23 @@
 'use strict';
 
+const { v4: uuidv4 } = require('uuid');
 const db = require('ep_etherpad-lite/node/db/DB').db;
+const api = require('ep_etherpad-lite/node/db/API');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
-const removeMd = require('remove-markdown');
+const removeMdBase = require('remove-markdown');
 
 const logPrefix = '[ep_search]';
 let searchEngine = null;
 
+
+function removeMd(baseText) {
+    const text = removeMdBase(baseText);
+    const m = text.match(/^\*+(.+)$/);
+    if (m) {
+        return m[1];
+    }
+    return text;
+}
 
 function createSearchEngine() {
     const pluginSettings = settings.ep_search || {};
@@ -65,6 +76,29 @@ async function padChangedAsync(hookName, args) {
     await searchEngine.commit();
 }
 
+async function getPadIdsByTitle(title) {
+    const { results } = await searchEngine.search(`title:"${title}"`);
+    if (!results) {
+        return null;
+    }
+    const ids = results
+        .filter((result) => result.title === title)
+        .map((result) => result.id);
+    if (ids.length === 0) {
+        return null;
+    }
+    ids.sort();
+    console.log(logPrefix, 'Redirecting...', title, ids[0]);
+    return ids;
+}
+
+async function createNewPadForTitle(title, req) {
+    console.log('Create pad', title);
+    const padId = uuidv4();
+    await api.createPad(padId, `${title}\n\n`);
+    return padId;
+}
+
 exports.registerRoute = (hookName, args, cb) => {
     if (!searchEngine) {
         searchEngine = createSearchEngine();
@@ -76,11 +110,38 @@ exports.registerRoute = (hookName, args, cb) => {
                 console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
             });
     }
-    args.app.get('/search', (req, res) => {
+    const { app } = args;
+    app.get('/search', (req, res) => {
         const searchString = req.query.query;
         searchEngine.search(searchString)
             .then((result) => {
                 res.send(JSON.stringify(result));
+            })
+            .catch((err) => {
+                console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
+                res.status(500).send({
+                    error: err.toString(),
+                });
+            });
+    });
+    app.get('/t/:title', (req, res) => {
+        const { title } = req.params;
+        getPadIdsByTitle(title)
+            .then((ids) => {
+                if (ids === null) {
+                    createNewPadForTitle(title, req)
+                        .then((id) => {
+                            res.redirect(`/p/${id}`);
+                        })
+                        .catch((err) => {
+                            console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
+                            res.status(500).send({
+                                error: err.toString(),
+                            });
+                        });
+                    return;
+                }
+                res.redirect(`/p/${ids[0]}`);
             })
             .catch((err) => {
                 console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));

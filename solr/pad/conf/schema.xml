@@ -32,5 +32,6 @@
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="_text_" type="text_ja" multiValued="false" indexed="true" required="true" stored="false"/>
   <field name="atext" type="text_ja" multiValued="false" indexed="true" required="true" stored="false"/>
-  <field name="title" type="text_ja" multiValued="false" indexed="true" required="true" stored="true"/>
+  <!-- Scrapbox-like Etherpad Support -->
+  <field name="title" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
 </schema>

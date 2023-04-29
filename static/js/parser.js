@@ -1,5 +1,13 @@
 'use strict';
 
+function removeMd(text) {
+    const m = text.match(/^\*+(.+)$/);
+    if (m) {
+        return m[1];
+    }
+    return text;
+}
+
 function tokenize(text) {
     const found = text.search(/\#\S+/);
     if (found < 0) {
@@ -13,6 +21,15 @@ function tokenize(text) {
 }
 
 exports.parse = (text) => {
+    if (!text.includes('\n')) {
+        return {
+            title: removeMd(text),
+            hashes: [],
+        };
+    }
+    const pos = text.indexOf('\n');
+    const title = removeMd(text.substring(0, pos));
+    text = text.substring(pos + 1);
     const hashes = [];
     while (text.length > 0) {
         const token = tokenize(text);
@@ -21,5 +38,5 @@ exports.parse = (text) => {
         }
         text = text.substring(token.length);
     }
-    return hashes;
+    return { title, hashes };
 };
