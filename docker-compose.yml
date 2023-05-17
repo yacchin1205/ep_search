@@ -3,6 +3,8 @@ version: '3'
 volumes:
   postgres_data_vol:
     external: false
+  solr_data_vol:
+    external: false
 
 services:
   postgresql:
@@ -18,6 +20,8 @@ services:
     build:
       context: .
       dockerfile: solr/Dockerfile
+    volumes:
+      - solr_data_vol:/var/solr/
 
   etherpad:
     build:

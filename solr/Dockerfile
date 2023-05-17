@@ -1,9 +1,12 @@
 FROM solr:8
 
 USER root
+
 COPY . /tmp/ep_weave
 RUN mkdir /opt/ep_weave \
-    && mv /tmp/ep_weave/solr /opt/ep_weave/
+    && mv /tmp/ep_weave/solr /opt/ep_weave/ \
+    && chmod 0755 /opt/ep_weave/solr/start.sh
 
 USER solr
-RUN precreate-core pad /opt/ep_weave/solr/pad/
+
+ENTRYPOINT /opt/ep_weave/solr/start.sh
