@@ -1,5 +1,8 @@
 'use strict';
 
+const absolutePaths = require('ep_etherpad-lite/node/utils/AbsolutePaths');
+const argv = require('ep_etherpad-lite/node/utils/Cli').argv;
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('ep_etherpad-lite/node/db/DB').db;
 const api = require('ep_etherpad-lite/node/db/API');
@@ -8,7 +11,7 @@ const removeMdBase = require('remove-markdown');
 
 const logPrefix = '[ep_search]';
 let searchEngine = null;
-
+let apikey = null;
 
 function removeMd(baseText) {
     const text = removeMdBase(baseText);
@@ -95,7 +98,8 @@ async function getPadIdsByTitle(title) {
 async function createNewPadForTitle(title, req) {
     console.log('Create pad', title);
     const padId = uuidv4();
-    await api.createPad(padId, `${title}\n\n`);
+    const body = req.query.body || '';
+    await api.createPad(padId, `${title}\n\n${body}`);
     return padId;
 }
 
@@ -110,9 +114,25 @@ exports.registerRoute = (hookName, args, cb) => {
                 console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
             });
     }
-    const { app } = args;
-    app.get('/search', (req, res) => {
-        const searchString = req.query.query;
+    const apikeyFilename = absolutePaths.makeAbsolute(argv.apikey || './APIKEY.txt');
+    try {
+        apikey = fs.readFileSync(apikeyFilename, 'utf8');
+        console.info(logPrefix, `Api key file read from: "${apikeyFilename}"`);
+    } catch (e) {
+        console.warn(logPrefix, `Api key file "${apikeyFilename}" cannot read.`);
+    }
+    const apikeyChecker = (req, res, next) => {
+        const reqApikey = req.query.apikey || '';
+        if (!reqApikey.trim()) {
+            return res.status(401).send('Authentication Required');
+        }
+        if (reqApikey.trim() !== apikey.trim()) {
+            return res.status(403).send('Unauthorized');
+        }
+        next();
+    };
+    const searchHandler = (req, res) => {
+        const searchString = req.query.query || req.query.q;
         searchEngine.search(searchString)
             .then((result) => {
                 res.send(JSON.stringify(result));
@@ -123,7 +143,10 @@ exports.registerRoute = (hookName, args, cb) => {
                     error: err.toString(),
                 });
             });
-    });
+    };
+    const { app } = args;
+    app.get('/search', searchHandler);
+    app.get('/api/ep_search/search', apikeyChecker, searchHandler);
     app.get('/t/:title', (req, res) => {
         const { title } = req.params;
         getPadIdsByTitle(title)

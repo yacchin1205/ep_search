@@ -14,6 +14,8 @@ RUN npm install --no-save --legacy-peer-deps /tmp/ep_search/ep_search-0.0.22.tgz
         ep_headings2 \
         ep_markdown \
         ep_image_upload \
+        ep_openid_connect \
+        ep_oauth2 \
     && src/bin/installDeps.sh \
     && rm -rf ~/.npm
 
