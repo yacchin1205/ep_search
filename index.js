@@ -9,7 +9,7 @@ const api = require('ep_etherpad-lite/node/db/API');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 const removeMdBase = require('remove-markdown');
 
-const logPrefix = '[ep_search]';
+const logPrefix = '[ep_weave]';
 let searchEngine = null;
 let apikey = null;
 
@@ -23,7 +23,7 @@ function removeMd(baseText) {
 }
 
 function createSearchEngine() {
-    const pluginSettings = settings.ep_search || {};
+    const pluginSettings = settings.ep_weave || {};
     const { type } = pluginSettings;
     if (type === 'dummy') {
         const noindexsearch = require('./noindexsearch');
@@ -146,7 +146,7 @@ exports.registerRoute = (hookName, args, cb) => {
     };
     const { app } = args;
     app.get('/search', searchHandler);
-    app.get('/api/ep_search/search', apikeyChecker, searchHandler);
+    app.get('/api/ep_weave/search', apikeyChecker, searchHandler);
     app.get('/t/:title', (req, res) => {
         const { title } = req.params;
         getPadIdsByTitle(title)

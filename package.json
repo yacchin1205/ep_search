@@ -1,11 +1,10 @@
 {
-  "name": "ep_search",
-  "description": "Search through all pads for a string",
-  "version": "0.0.22",
+  "name": "ep_weave",
+  "description": "Link all pads using Hash inspired by Scrapbox and ep_search",
+  "version": "0.1.0",
   "author": {
-    "name": "John McLear",
-    "email": "john@mclear.co.uk",
-    "url": "http://mclear.co.uk"
+    "name": "NII-cloud-operation",
+    "url": "https://github.com/NII-cloud-operation/"
   },
   "contributors": [],
   "dependencies": {
@@ -16,10 +15,6 @@
   },
   "engines": {
     "node": ">=12.17.0"
-  },
-  "funding": {
-    "type": "individual",
-    "url": "https://etherpad.org/"
   },
   "devDependencies": {
     "eslint": "^8.11.0",
@@ -35,6 +30,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ether/ep_search.git"
+    "url": "https://github.com/NII-cloud-operation/ep_weave.git"
   }
 }

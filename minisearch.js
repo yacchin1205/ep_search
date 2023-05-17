@@ -1,7 +1,7 @@
 const MiniSearch = require('minisearch');
 
 
-const logPrefix = '[ep_search/minisearch]';
+const logPrefix = '[ep_weave/minisearch]';
 
 
 class MinisearchSearchEngine {

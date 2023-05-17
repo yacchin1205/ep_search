@@ -1,21 +1,21 @@
 {
   "parts":[
     {
-      "name": "ep_search",
+      "name": "ep_weave",
       "hooks": {
-        "expressCreateServer" : "ep_search/index:registerRoute",
-        "padCreate": "ep_search/index:padChanged",
-        "padUpdate": "ep_search/index:padChanged",
-        "padRemove": "ep_search/index:padChanged",
-        "eejsBlock_indexWrapper": "ep_search/client",
-        "eejsBlock_styles": "ep_search/client"
+        "expressCreateServer" : "ep_weave/index:registerRoute",
+        "padCreate": "ep_weave/index:padChanged",
+        "padUpdate": "ep_weave/index:padChanged",
+        "padRemove": "ep_weave/index:padChanged",
+        "eejsBlock_indexWrapper": "ep_weave/client",
+        "eejsBlock_styles": "ep_weave/client"
       },
       "client_hooks": {
-        "postAceInit": "ep_search/static/js/hashview",
-        "postToolbarInit": "ep_search/static/js/hashview",
-        "aceEditEvent": "ep_search/static/js/hashview",
-        "aceGetFilterStack": "ep_search/static/js/hashview",
-        "aceCreateDomLine": "ep_search/static/js/hashview"
+        "postAceInit": "ep_weave/static/js/hashview",
+        "postToolbarInit": "ep_weave/static/js/hashview",
+        "aceEditEvent": "ep_weave/static/js/hashview",
+        "aceGetFilterStack": "ep_weave/static/js/hashview",
+        "aceCreateDomLine": "ep_weave/static/js/hashview"
       }
     }
   ]

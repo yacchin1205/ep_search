@@ -3,7 +3,7 @@
 const parser = require('./parser');
 
 
-const logPrefix = '[ep_search/hashview]';
+const logPrefix = '[ep_weave/hashview]';
 let currentHashes = [];
 let myPad = null;
 const ACE_EDITOR_TAG = 'searchHash';

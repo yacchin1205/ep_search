@@ -1,7 +1,7 @@
 const db = require('ep_etherpad-lite/node/db/DB').db;
 
 
-const logPrefix = '[ep_search/noindexsearch]';
+const logPrefix = '[ep_weave/noindexsearch]';
 
 
 class NoIndexSearchEngine {

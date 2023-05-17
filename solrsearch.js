@@ -1,7 +1,7 @@
 const solr = require('solr-client');
 
 
-const logPrefix = '[ep_search/solrsearch]';
+const logPrefix = '[ep_weave/solrsearch]';
 
 
 class SolrsearchSearchEngine {

@@ -2,12 +2,12 @@ FROM etherpad/etherpad
 
 USER root
 
-COPY . /tmp/ep_search
-RUN cd /tmp/ep_search \
-    && ls -la /tmp/ep_search \
+COPY . /tmp/ep_weave
+RUN cd /tmp/ep_weave \
+    && ls -la /tmp/ep_weave \
     && npm pack
 
-RUN npm install --no-save --legacy-peer-deps /tmp/ep_search/ep_search-0.0.22.tgz \
+RUN npm install --no-save --legacy-peer-deps /tmp/ep_weave/ep_weave-0.1.0.tgz \
         ep_align \
         ep_embedded_hyperlinks2 \
         ep_font_color \
