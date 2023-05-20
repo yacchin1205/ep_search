@@ -16,13 +16,14 @@ $('#searchForm').keyup(function(){
 function doSearch(){
   var searchString = $("#searchInput").val();
   $("#searchResults").html("");
-  $.getJSON('/search/?query='+searchString, function(data) {
+  $.getJSON('/search/?query='+encodeURI(searchString), function(data) {
     // console.log(data);
-    $.each(data, function(index, value){
+    $.each(data, function(index, doc){
+      var value = doc.id;
       // console.log(value);
       value = value.replace("pad:", "");
       value = encodeURI(value);
-      $("#searchResults").append("<a href='/p/"+value+"'>"+value+"</a>");
+      $("#searchResults").append("<div><a href='/p/"+value+"'>"+value+"</a></div>");
     });
   });
 }

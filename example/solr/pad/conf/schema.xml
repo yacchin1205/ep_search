@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema name="pad" version="1.6">
+  <uniqueKey>id</uniqueKey>
+
+  <fieldType name="long" class="solr.TrieLongField" positionIncrementGap="0" docValues="true" precisionStep="0"/>
+  <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true"/>
+  <fieldType name="date" class="solr.TrieDateField" sortMissingLast="true" docValues="true"/>
+  <fieldType name="text" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="false">
+    <analyzer>
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+  <field name="_version_" type="long" indexed="true" stored="false"/>
+  <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="indexed" type="date" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="_text_" type="text" multiValued="false" indexed="true" required="true" stored="false"/>
+  <field name="atext" type="text" multiValued="false" indexed="true" required="true" stored="false"/>
+</schema>
