@@ -23,6 +23,8 @@ Add the following to Etherpad's settings file `settings.json`.
     }
 ```
 
+See [example/solr](example/solr/) for Solr configuration.
+
 ## Defining Serializer
 
 You can define a serializer to extract the fields you need when indexing the Pad.
