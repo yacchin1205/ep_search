@@ -4,185 +4,98 @@ const absolutePaths = require('ep_etherpad-lite/node/utils/AbsolutePaths');
 const argv = require('ep_etherpad-lite/node/utils/Cli').argv;
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const db = require('ep_etherpad-lite/node/db/DB').db;
-const api = require('ep_etherpad-lite/node/db/API');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
-const removeMdBase = require('remove-markdown');
+const api = require('ep_etherpad-lite/node/db/API');
+const { createSearchEngine } = require('ep_search/setup');
 
 const logPrefix = '[ep_weave]';
-let searchEngine = null;
 let apikey = null;
 
-function removeMd(baseText) {
-    const text = removeMdBase(baseText);
-    const m = text.match(/^\*+(.+)$/);
-    if (m) {
-        return m[1];
-    }
-    return text;
-}
-
-function createSearchEngine() {
-    const pluginSettings = settings.ep_weave || {};
-    const { type } = pluginSettings;
-    if (type === 'dummy') {
-        const noindexsearch = require('./noindexsearch');
-        return noindexsearch.create();
-        }
-    if (type === 'solr') {
-        const solrsearch = require('./solrsearch');
-        return solrsearch.create(pluginSettings);
-    }
-    const minisearch = require('./minisearch');
-    return minisearch.create();
-}
-
-async function initializeAllPads() {
-    if (!await searchEngine.isEmpty()) {
-        return;
-    }
-    const pads = await db.findKeys('pad:*', '*:*:*');
-    await Promise.all(pads.map((pad) => initializePad(pad)));
-    await searchEngine.commit();
-}
-
-function extractTitle(padData) {
-    const lines = (padData.atext || {}).text.split('\n');
-    return removeMd(lines[0]);
-}
-
-async function initializePad(pad) {
-    const padData = await db.get(pad);
-    let id = pad;
-    const m = pad.match(/^pad:(.+)$/);
-    if (m) {
-        id = m[1];
-    }
-    await searchEngine.update(Object.assign({
-        id,
-        title: extractTitle(padData),
-    }, padData));
-}
-
-async function padChangedAsync(hookName, args) {
-    if (!searchEngine) {
-        return;
-    }
-    const { pad } = args;
-    if (hookName === 'padRemove') {
-        await searchEngine.remove(pad);
-        return;
-    }
-    await searchEngine.update(Object.assign({
-        title: extractTitle(pad),
-    }, pad));
-    await searchEngine.commit();
-}
-
-async function getPadIdsByTitle(title) {
-    const { results } = await searchEngine.search(`title:"${title}"`);
-    if (!results) {
-        return null;
-    }
-    const ids = results
-        .filter((result) => result.title === title)
-        .map((result) => result.id);
-    if (ids.length === 0) {
-        return null;
-    }
-    ids.sort();
-    console.log(logPrefix, 'Redirecting...', title, ids[0]);
-    return ids;
+async function getPadIdsByTitle(searchEngine, title) {
+  const results = await searchEngine.search(`title:"${title}"`);
+  console.debug(logPrefix, `Search by title ${title}`, results);
+  if (!results) {
+    return null;
+  }
+  const ids = results
+    .filter((result) => result.title === title)
+    .map((result) => result.id);
+  if (ids.length === 0) {
+    return null;
+  }
+  ids.sort();
+  console.info(logPrefix, 'Redirecting...', title, ids[0]);
+  return ids;
 }
 
 async function createNewPadForTitle(title, req) {
-    console.log('Create pad', title);
-    const padId = uuidv4();
-    const body = req.query.body || '';
-    await api.createPad(padId, `${title}\n\n${body}`);
-    return padId;
+  console.info(logPrefix, 'Create pad', title);
+  const padId = uuidv4();
+  const body = req.query.body || '';
+  await api.createPad(padId, `${title}\n\n${body}`);
+  return padId;
 }
 
 exports.registerRoute = (hookName, args, cb) => {
-    if (!searchEngine) {
-        searchEngine = createSearchEngine();
-        initializeAllPads()
-            .then(() => {
-                console.log(logPrefix, 'Initialized');
-            })
-            .catch((err) => {
-                console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
-            });
-    }
+    const pluginSettings = settings.ep_search || {};
+    const searchEngine = createSearchEngine(pluginSettings);
     const apikeyFilename = absolutePaths.makeAbsolute(argv.apikey || './APIKEY.txt');
     try {
-        apikey = fs.readFileSync(apikeyFilename, 'utf8');
-        console.info(logPrefix, `Api key file read from: "${apikeyFilename}"`);
+      apikey = fs.readFileSync(apikeyFilename, 'utf8');
+      console.info(logPrefix, `Api key file read from: "${apikeyFilename}"`);
     } catch (e) {
-        console.warn(logPrefix, `Api key file "${apikeyFilename}" cannot read.`);
+      console.warn(logPrefix, `Api key file "${apikeyFilename}" cannot read.`);
     }
     const apikeyChecker = (req, res, next) => {
-        const reqApikey = req.query.apikey || '';
-        if (!reqApikey.trim()) {
-            return res.status(401).send('Authentication Required');
-        }
-        if (reqApikey.trim() !== apikey.trim()) {
-            return res.status(403).send('Unauthorized');
-        }
-        next();
+      const reqApikey = req.query.apikey || '';
+      if (!reqApikey.trim()) {
+        return res.status(401).send('Authentication Required');
+      }
+      if (reqApikey.trim() !== apikey.trim()) {
+        return res.status(403).send('Unauthorized');
+      }
+      next();
     };
     const searchHandler = (req, res) => {
         const searchString = req.query.query || req.query.q;
         searchEngine.search(searchString)
-            .then((result) => {
-                res.send(JSON.stringify(result));
-            })
-            .catch((err) => {
-                console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
-                res.status(500).send({
-                    error: err.toString(),
-                });
+          .then((result) => {
+            res.send(JSON.stringify(result));
+          })
+          .catch((err) => {
+            console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
+            res.status(500).send({
+              error: err.toString(),
             });
+          });
     };
     const { app } = args;
-    app.get('/search', searchHandler);
     app.get('/api/ep_weave/search', apikeyChecker, searchHandler);
     app.get('/t/:title', (req, res) => {
-        const { title } = req.params;
-        getPadIdsByTitle(title)
-            .then((ids) => {
-                if (ids === null) {
-                    createNewPadForTitle(title, req)
-                        .then((id) => {
-                            res.redirect(`/p/${id}`);
-                        })
-                        .catch((err) => {
-                            console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
-                            res.status(500).send({
-                                error: err.toString(),
-                            });
-                        });
-                    return;
-                }
-                res.redirect(`/p/${ids[0]}`);
-            })
-            .catch((err) => {
+      const { title } = req.params;
+      getPadIdsByTitle(searchEngine, title)
+        .then((ids) => {
+          if (ids === null) {
+            createNewPadForTitle(title, req)
+              .then((id) => {
+                res.redirect(`/p/${id}`);
+              })
+              .catch((err) => {
                 console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
                 res.status(500).send({
-                    error: err.toString(),
+                  error: err.toString(),
                 });
-            });
-    });
-    cb(null);
-};
-
-exports.padChanged = (hookName, args, cb) => {
-    padChangedAsync(hookName, args)
-        .then(() => {
-            ;
+              });
+            return;
+          }
+          res.redirect(`/p/${ids[0]}`);
         })
         .catch((err) => {
-            console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
+          console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
+          res.status(500).send({
+            error: err.toString(),
+          });
         });
+    });
     cb(null);
 };

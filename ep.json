@@ -4,10 +4,6 @@
       "name": "ep_weave",
       "hooks": {
         "expressCreateServer" : "ep_weave/index:registerRoute",
-        "padCreate": "ep_weave/index:padChanged",
-        "padUpdate": "ep_weave/index:padChanged",
-        "padRemove": "ep_weave/index:padChanged",
-        "eejsBlock_indexWrapper": "ep_weave/client",
         "eejsBlock_styles": "ep_weave/client"
       },
       "client_hooks": {

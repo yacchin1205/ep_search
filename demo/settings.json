@@ -604,11 +604,12 @@
     /* Disable Admin UI tests */
     "enableAdminUITests": false,
   
-    "ep_weave": {
+    "ep_search": {
       "type": "solr",
       "host": "solr",
       "port": "8983",
-      "core": "pad"
+      "core": "pad",
+      "padSerializer": "ep_weave/serializer"
     }
   }
   
