@@ -62,12 +62,11 @@ async function removeAsync(pad) {
  *
  * @param {*} pad Pad to be created / updated.
  */
-async function updateAsync(args) {
+async function updateAsync(pad) {
   if (!searchEngine) {
     console.warn(logPrefix, 'Search engine not yet initialized');
     return;
   }
-  const { pad } = args;
   await searchEngine.update(padSerializer(pad));
   await searchEngine.commit();
 }
