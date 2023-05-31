@@ -41,7 +41,7 @@ exports.aceEditEvent = (hook, context) => {
         const qhash = `"${hash}"`;
         $.getJSON('/search/?query=' + encodeURIComponent(qhash), (data) => {
             let empty = true;
-            (data.results || []).filter((doc) => doc.id !== clientVars.padId).forEach((doc) => {
+            (data || []).filter((doc) => doc.id !== clientVars.padId).forEach((doc) => {
                 let value = doc.id;
                 // console.log(value);
                 value = value.replace("pad:", "");
@@ -51,7 +51,7 @@ exports.aceEditEvent = (hook, context) => {
                 container.append($("<div></div>").append(anchor).addClass('hash-link'));
                 empty = false;
             });
-            if ((data.results || []).every((doc) => doc.title !== hash.substring(1)) && title !== hash.substring(1)) {
+            if ((data || []).every((doc) => doc.title !== hash.substring(1)) && title !== hash.substring(1)) {
                 const anchor = $('<a></a>').attr('href', '/t/' + hash.substring(1)).text(hash);
                 container.append($("<div></div>").append(anchor).addClass('hash-link'));
                 empty = false;
