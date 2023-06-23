@@ -20,6 +20,8 @@ function tokenize(text) {
     return m[1];
 }
 
+exports.tokenize = tokenize;
+
 exports.parse = (text) => {
     if (!text.includes('\n')) {
         return {

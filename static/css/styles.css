@@ -1,3 +1,15 @@
+.hashview-change-title {
+    background-color: #64d29b;
+    color: #fff;
+    display: none;
+}
+
+.hashview-title-duplicated {
+    background-color: #f00;
+    color: #fff;
+    display: none;
+}
+
 .hashview {
     background-color: white;
     position: absolute;

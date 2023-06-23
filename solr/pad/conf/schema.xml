@@ -26,6 +26,11 @@
       <filter class="solr.LowerCaseFilterFactory"/>
     </analyzer>
   </fieldType>
+  <fieldType name="hash" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="false">
+    <analyzer>
+      <tokenizer class="solr.PatternTokenizerFactory" pattern="#\S+" group="0"/>
+    </analyzer>
+  </fieldType>
 
   <field name="_version_" type="long" indexed="true" stored="false"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
@@ -34,4 +39,5 @@
   <field name="atext" type="text_ja" multiValued="false" indexed="true" required="true" stored="false"/>
   <!-- Scrapbox-like Etherpad Support -->
   <field name="title" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="hash" type="hash" multiValued="false" indexed="true" required="true" stored="false"/>
 </schema>

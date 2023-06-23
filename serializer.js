@@ -29,6 +29,7 @@ exports.create = (pluginSettings) => {
       _text_: atext,
       atext,
       title: extractTitle(pad),
+      hash: atext,
     };
     console.debug(logPrefix, 'serialize', pad, result);
     return result;

@@ -7,6 +7,9 @@ const { v4: uuidv4 } = require('uuid');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 const api = require('ep_etherpad-lite/node/db/API');
 const { createSearchEngine } = require('ep_search/setup');
+const { tokenize } = require('./static/js/parser.js');
+const HTMLParser = require('node-html-parser');
+const { decode, encode } = require('he');
 
 const logPrefix = '[ep_weave]';
 let apikey = null;
@@ -34,6 +37,67 @@ async function createNewPadForTitle(title, req) {
   const body = req.query.body || '';
   await api.createPad(padId, `${title}\n\n${body}`);
   return padId;
+}
+
+function replaceHashToken(token, oldtitle, newtitle) {
+  if (token === `#${oldtitle}`) {
+    return `#${newtitle}`;
+  }
+  return token;
+}
+
+function replaceHash(text, oldtitle, newtitle) {
+  let newtext = '';
+  let remain = text;
+  while(remain.length > 0) {
+    const token = tokenize(remain);
+    newtext += replaceHashToken(token, oldtitle, newtitle);
+    remain = remain.substring(token.length);
+  }
+  return newtext;
+}
+
+function traverseNodes(node, handler) {
+  handler(node);
+  (node.childNodes || []).forEach((child) => {
+    handler(child);
+    traverseNodes(child, handler);
+  })
+}
+
+function replaceHashHtml(html, oldtitle, newtitle) {
+  let html_ = html;
+  const m = html.match(/^\<\!DOCTYPE\s+HTML\>(.+)$/);
+  if (m) {
+    html_ = m[1];
+  }
+  const root = HTMLParser.parse(html_);
+  traverseNodes(root, (node) => {
+    if (node.nodeType !== 3 /*Node.TEXT_NODE*/) {
+      return;
+    }
+    node.rawText = encode(
+      replaceHash(decode(node.rawText), oldtitle, newtitle),
+    );
+  })
+  return root.toString();
+}
+
+async function updateHash(pad, oldtitle, newtitle) {
+  const { html } = await api.getHTML(pad.id);
+  console.debug(logPrefix, 'Update hash with text', pad, ', src=', html);
+  const newhtml = replaceHashHtml(html, oldtitle, newtitle);
+  await api.setHTML(pad.id, newhtml);
+  console.debug(logPrefix, 'Update hash with text', pad, ', src=', html, ', desst=', newhtml);
+  return pad.id;
+}
+
+async function updateHashes(searchEngine, oldtitle, newtitle) {
+  const pads = await searchEngine.search(`hash:"#${oldtitle}"`);
+  const updates = await Promise.all(pads.map((pad) => updateHash(pad, oldtitle, newtitle)));
+  return {
+    updates,
+  };
 }
 
 exports.registerRoute = (hookName, args, cb) => {
@@ -89,6 +153,26 @@ exports.registerRoute = (hookName, args, cb) => {
             return;
           }
           res.redirect(`/p/${ids[0]}`);
+        })
+        .catch((err) => {
+          console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
+          res.status(500).send({
+            error: err.toString(),
+          });
+        });
+    });
+    app.put('/ep_weave/hashes', (req, res) => {
+      const { oldtitle, newtitle } = req.query;
+      if (!oldtitle || !newtitle) {
+        res.status(400).send({
+          error: 'Missing parameters',
+        });
+        return;
+      }
+      console.debug(logPrefix, 'Update', oldtitle, newtitle);
+      updateHashes(searchEngine, oldtitle, newtitle)
+        .then((result) => {
+          res.send(JSON.stringify(result));
         })
         .catch((err) => {
           console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
