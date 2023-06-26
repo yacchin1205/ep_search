@@ -96,7 +96,7 @@ exports.registerRoute = (hookName, args, cb) => {
       return;
     }
     console.debug(logPrefix, 'Search', searchString);
-    searchEngine.search(searchString)
+    searchEngine.search(searchString, req.query)
       .then((result) => {
         res.send(JSON.stringify(result));
       })

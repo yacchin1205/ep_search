@@ -52,8 +52,12 @@ class SolrsearchSearchEngine {
     await this.client.deleteByID(pad.id);
   }
 
-  async search(searchString) {
-    const results = await this.client.search(`q=${encodeURIComponent(searchString)}`);
+  async search(searchString, solrOpts) {
+    const opts = [];
+    if (solrOpts && solrOpts.sort) {
+      opts.push(`sort=${encodeURIComponent(solrOpts.sort)}`);
+    }
+    const results = await this.client.search(`q=${encodeURIComponent(searchString)}&${opts.join('&')}`);
     const { docs } = results.response || {};
     return docs || [];
   }
