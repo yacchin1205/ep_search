@@ -4,6 +4,7 @@ const removeMdBase = require('remove-markdown');
 
 
 const logPrefix = '[ep_weave]';
+const LENGTH_SHORT_TEXT = 32;
 
 
 function removeMd(baseText) {
@@ -30,9 +31,19 @@ function extractCreated(pad) {
   return new Date(revs[0]).toISOString();
 }
 
+function extractShortText(text) {
+  const titleIndex = text.indexOf('\n');
+  let atext = text;
+  if (titleIndex >= 0) {
+    atext = text.substring(titleIndex + 1).trim();
+  }
+  return atext.length > LENGTH_SHORT_TEXT ? `${atext.substring(0, LENGTH_SHORT_TEXT)}...` : atext;
+}
+
 exports.create = (pluginSettings) => {
   return (pad) => {
     const atext = (pad.atext || {}).text || '';
+    const shorttext = extractShortText(atext);
     const result = {
       indexed: new Date().toISOString(),
       id: pad.id,
@@ -40,6 +51,7 @@ exports.create = (pluginSettings) => {
       atext,
       title: extractTitle(pad),
       hash: atext,
+      shorttext,
     };
     const created = extractCreated(pad);
     if (created !== null) {

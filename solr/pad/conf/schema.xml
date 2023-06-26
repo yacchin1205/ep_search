@@ -41,4 +41,5 @@
   <!-- Scrapbox-like Etherpad Support -->
   <field name="title" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="hash" type="hash" multiValued="false" indexed="true" required="true" stored="false"/>
+  <field name="shorttext" type="text_ja" multiValued="false" indexed="false" required="true" stored="true"/>
 </schema>

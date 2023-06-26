@@ -165,8 +165,8 @@ function checkTitle(title) {
 function reloadHashView(title, hashes) {
     const root = $('#hashview').empty();
     (hashes || []).forEach((hash) => {
+        root.append($('<div></div>').text(hash).addClass('hash-text'));
         const container = $('<div></div>').addClass('hash-container');
-        container.append($('<div></div>').text(hash).addClass('hash-text'));
         root.append(container);
         const qhash = `hash:"${hash}"`;
         const sort = $('#hashview-order').val();
@@ -178,12 +178,36 @@ function reloadHashView(title, hashes) {
                 value = encodeURIComponent(value);
                 const title = doc.title || value;
                 const anchor = $('<a></a>').attr('href', '/p/' + value).text(title);
-                container.append($("<div></div>").append(anchor).addClass('hash-link'));
+                const hashLink = $("<div></div>")
+                    .append($('<div></div>').addClass('hash-title').append(anchor))
+                    .addClass('hash-link');
+                if (doc.shorttext) {
+                    hashLink.append($('<div></div>')
+                        .addClass('hash-shorttext')
+                        .append(doc.shorttext));
+                }
+                container
+                    .append(hashLink);
                 empty = false;
             });
             if ((data || []).every((doc) => doc.title !== hash.substring(1)) && title !== hash.substring(1)) {
-                const anchor = $('<a></a>').attr('href', '/t/' + hash.substring(1)).text(hash);
-                container.append($("<div></div>").append(anchor).addClass('hash-link'));
+                const q = `title:${hash.substring(1)}`;
+                $.getJSON(`/search/?query=${encodeURIComponent(q)}`, (data) => {
+                    const anchor = $('<a></a>')
+                        .attr('href', '/t/' + hash.substring(1))
+                        .text(hash.substring(1));
+                    const createClass = (data || []).length === 0 ? 'hash-create' : '';
+                    const hashLink = $("<div></div>")
+                        .append($('<div></div>').addClass('hash-title').append(anchor))
+                        .addClass('hash-link ' + createClass);
+                    if ((data || []).length > 0 && data[0].shorttext) {
+                        hashLink.append($('<div></div>')
+                            .addClass('hash-shorttext')
+                            .append(data[0].shorttext));
+                    }
+                    container
+                        .append(hashLink);
+                });
                 empty = false;
             }
             if (empty) {
