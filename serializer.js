@@ -20,6 +20,16 @@ function extractTitle(padData) {
     return removeMd(lines[0]);
 }
 
+function extractCreated(pad) {
+  const revs = (pad.savedRevisions || [])
+    .map((rev) => rev.timestamp);
+  revs.sort();
+  if (revs.length === 0) {
+    return null;
+  }
+  return new Date(revs[0]).toISOString();
+}
+
 exports.create = (pluginSettings) => {
   return (pad) => {
     const atext = (pad.atext || {}).text || '';
@@ -31,6 +41,10 @@ exports.create = (pluginSettings) => {
       title: extractTitle(pad),
       hash: atext,
     };
+    const created = extractCreated(pad);
+    if (created !== null) {
+      result.created = created;
+    }
     console.debug(logPrefix, 'serialize', pad, result);
     return result;
   };

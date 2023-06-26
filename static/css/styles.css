@@ -20,6 +20,14 @@
     padding: 0.5em;
 }
 
+.hashview-toolbar {
+    display: flex;
+}
+
+.hashview-sort {
+    margin-left: auto;
+}
+
 .hashview-collapsed {
     height: 1em;
 }
@@ -33,9 +41,7 @@
 }
 
 .hashview-close {
-    position: absolute;
-    right: 12px;
-    top: 12px;
+    margin: 7px;
 }
 
 .hash-container {

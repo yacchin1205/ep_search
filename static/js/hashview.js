@@ -169,7 +169,8 @@ function reloadHashView(title, hashes) {
         container.append($('<div></div>').text(hash).addClass('hash-text'));
         root.append(container);
         const qhash = `hash:"${hash}"`;
-        $.getJSON('/search/?query=' + encodeURIComponent(qhash), (data) => {
+        const sort = $('#hashview-order').val();
+        $.getJSON(`/search/?query=${encodeURIComponent(qhash)}&sort=${encodeURIComponent(sort)}`, (data) => {
             let empty = true;
             (data || []).filter((doc) => doc.id !== clientVars.padId).forEach((doc) => {
                 let value = doc.id;
@@ -255,9 +256,35 @@ exports.postToolbarInit = (hook, context) => {
                     .removeClass('hashview-expanded');
             }
         });
+    const sortSelection = $('<select></select>')
+        .attr('id', 'hashview-order')
+        .append($('<optgroup></optgroup>')
+            .attr('label', 'Sort by')
+            .append($('<option></option>')
+                .attr('value', 'indexed desc').attr('selected', 'selected').text('Date modified'))
+            .append($('<option></option>')
+                .attr('value', 'created desc').text('Date created'))
+            .append($('<option></option>')
+                .attr('value', 'title asc').text('Title')));
+    const sort = $('<div>')
+        .addClass('hashview-sort')
+        .append(sortSelection
+            .on('change', () => {
+                if (!clientVars) {
+                    return;
+                }
+                const { ep_weave } = clientVars;
+                if (!currentHashes) {
+                    return;
+                }
+                reloadHashView(ep_weave.title, currentHashes);
+            }));
     $('<div>')
         .addClass('hashview hashview-expanded')
-        .append(close)
+        .append($('<div></div>')
+            .addClass('hashview-toolbar')
+            .append(sort)
+            .append(close))
         .append(result)
         .click(() => {
             const collapsed = $('.hashview-collapsed');

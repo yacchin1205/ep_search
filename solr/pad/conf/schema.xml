@@ -35,6 +35,7 @@
   <field name="_version_" type="long" indexed="true" stored="false"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="indexed" type="date" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="created" type="date" multiValued="false" indexed="true" required="false" stored="true"/>
   <field name="_text_" type="text_ja" multiValued="false" indexed="true" required="true" stored="false"/>
   <field name="atext" type="text_ja" multiValued="false" indexed="true" required="true" stored="false"/>
   <!-- Scrapbox-like Etherpad Support -->
