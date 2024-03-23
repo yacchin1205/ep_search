@@ -10,7 +10,7 @@
   "contributors": [],
   "dependencies": {
     "minisearch": "^6.1.0",
-    "solr-client": "^0.10.0-rc10"
+    "node-fetch": "^3.3.2"
   },
   "engines": {
     "node": ">=12.17.0"

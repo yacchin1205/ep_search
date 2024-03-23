@@ -14,5 +14,3 @@ RUN bin/installDeps.sh && rm -rf ~/.npm && \
     if [ ! -z "${ETHERPAD_LOCAL_PLUGINS}" ]; then \
         pnpm run install-plugins ${ETHERPAD_LOCAL_PLUGINS:+--path ${ETHERPAD_LOCAL_PLUGINS}}; \
     fi
-
-#USER etherpad

@@ -1,4 +1,4 @@
-const solr = require('solr-client');
+const solr = require('./solr-client');
 
 
 const logPrefix = '[ep_search/solrsearch]';
