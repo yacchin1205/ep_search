@@ -8,10 +8,16 @@
 <div id="searchResults"></div>
 
 <script type="text/javascript">
-$('#searchForm').keyup(function(){
-  $("#searchResults").html("");
-  doSearch();
-});
+$('#searchForm')
+  .keyup(function(){
+    $("#searchResults").html("");
+    doSearch();
+  })
+  .submit(function(event){
+    event.preventDefault();
+    $("#searchResults").html("");
+    doSearch();
+  });
 
 function doSearch(){
   var searchString = $("#searchInput").val();
