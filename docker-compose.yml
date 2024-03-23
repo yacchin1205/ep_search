@@ -39,8 +39,8 @@ services:
       DB_TYPE: postgres
       DB_USER: etherpaduser
       LOGLEVEL: "debug"
-    # volumes:
-    #   - ./demo/settings.json:/opt/etherpad-lite/settings.json:ro
+    volumes:
+      - ./example/settings.json:/opt/etherpad-lite/settings.json:ro
     depends_on:
       - postgresql
       - solr
