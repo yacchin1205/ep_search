@@ -24,7 +24,7 @@ function doSearch(){
   $("#searchResults").html("");
   $.getJSON('/search/?query='+encodeURI(searchString), function(data) {
     // console.log(data);
-    $.each(data, function(index, doc){
+    $.each(data.docs || [], function(index, doc){
       var value = doc.id;
       // console.log(value);
       value = value.replace("pad:", "");
