@@ -13,10 +13,6 @@ function createPadSerializer(pluginSettings, searchEngine) {
 
 function createSearchEngine(pluginSettings) {
   const { type } = pluginSettings;
-  if (type === 'legacy') {
-    const noindexsearch = require('./search-engine/noindexsearch');
-    return noindexsearch.create(pluginSettings);
-  }
   if (type === 'solr') {
     const solrsearch = require('./search-engine/solrsearch');
     return solrsearch.create(pluginSettings);

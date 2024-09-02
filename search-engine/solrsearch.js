@@ -1,4 +1,4 @@
-const solr = require('solr-client');
+const solr = require('./solr-client');
 
 
 const logPrefix = '[ep_search/solrsearch]';
@@ -53,13 +53,23 @@ class SolrsearchSearchEngine {
   }
 
   async search(searchString, solrOpts) {
+    if (!searchString) {
+      return {
+        numFound: 0,
+        start: 0,
+        numFoundExact: true,
+        docs: [],
+      };
+    }
     const opts = [];
-    if (solrOpts && solrOpts.sort) {
-      opts.push(`sort=${encodeURIComponent(solrOpts.sort)}`);
+    const supportedFields = ['fq', 'start', 'rows', 'sort'];
+    for (const field of supportedFields) {
+      if (solrOpts && solrOpts[field]) {
+        opts.push(`${field}=${encodeURIComponent(solrOpts[field])}`);
+      }
     }
     const results = await this.client.search(`q=${encodeURIComponent(searchString)}&${opts.join('&')}`);
-    const { docs } = results.response || {};
-    return docs || [];
+    return results.response;
   }
 }
 

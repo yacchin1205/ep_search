@@ -46,7 +46,13 @@ class MiniSearchSearchEngine {
   }
 
   async search(searchString) {
-    return this.minisearch.search(searchString);
+    const docs = this.minisearch.search(searchString);
+    return {
+      numFound: docs.length,
+      start: 0,
+      numFoundExact: true,
+      docs,
+    };
   }
 }
 
