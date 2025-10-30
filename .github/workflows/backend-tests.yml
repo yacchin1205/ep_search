@@ -62,6 +62,18 @@ jobs:
         name: Install Etherpad core dependencies
         working-directory: ./etherpad-lite
         run: bin/installDeps.sh
+      - name: Debug directory structure
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== List current directory ==="
+          ls -la
+          echo "=== List etherpad-lite ==="
+          ls -la etherpad-lite/ || true
+          echo "=== List plugin ==="
+          ls -la plugin/ || true
+          echo "=== From etherpad-lite/bin perspective ==="
+          cd etherpad-lite/bin && pwd && ls -la ../../plugin/ || true
       - name: Build Solr
         working-directory: ./plugin
         run: |
@@ -69,7 +81,7 @@ jobs:
       - name: Install plugin to etherpad-lite
         working-directory: ./etherpad-lite
         run: |
-          pnpm run plugins i --path ../plugin
+          pnpm run plugins i --path ../../plugin
         env:
           PLUGIN_NAME: ${{ steps.plugin_name.outputs.plugin_name }}
       -
