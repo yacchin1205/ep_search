@@ -74,16 +74,29 @@ jobs:
           ls -la plugin/ || true
           echo "=== From etherpad-lite/bin perspective ==="
           cd etherpad-lite/bin && pwd && ls -la ../../plugin/ || true
+      - name: Link plugin directory
+        working-directory: ./plugin
+        run: |
+          pnpm link --global
       - name: Build Solr
         working-directory: ./plugin
         run: |
           docker buildx build -o type=docker -t ep_search/solr -f ./example/solr/Dockerfile ./example/solr
-      - name: Install plugin to etherpad-lite
+      - name: Link plugin to etherpad-lite
         working-directory: ./etherpad-lite
         run: |
+          pnpm link --global $PLUGIN_NAME
           pnpm run plugins i --path ../../plugin
         env:
           PLUGIN_NAME: ${{ steps.plugin_name.outputs.plugin_name }}
+      - name: Link ep_etherpad-lite
+        working-directory: ./etherpad-lite/src
+        run: |
+          pnpm link --global
+      - name: Link etherpad to plugin
+        working-directory: ./plugin
+        run: |
+          pnpm link --global ep_etherpad-lite
       - name: Debug plugin installation
         working-directory: ./etherpad-lite
         run: |
