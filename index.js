@@ -3,7 +3,6 @@
 // Main job is to check pads periodically for activity and notify owners
 // when someone begins editing and when someone finishes.
 const db = require('ep_etherpad-lite/node/db/DB').db;
-const settings = require('ep_etherpad-lite/node/utils/Settings');
 const { createPadSerializer, createSearchEngine } = require('./setup');
 
 // Settings -- EDIT THESE IN settings.json not here..
@@ -13,6 +12,15 @@ const { createPadSerializer, createSearchEngine } = require('./setup');
 const logPrefix = '[ep_search]';
 let searchEngine = null;
 let padSerializer = null;
+let pluginSettings = {};
+
+/**
+ * Load settings hook - receives settings from Etherpad
+ */
+exports.loadSettings = (hookName, {settings}) => {
+  pluginSettings = settings.ep_search || {};
+  console.log(logPrefix, 'Settings loaded:', JSON.stringify(pluginSettings, null, 2));
+};
 
 /**
  * If the indexes in the search engine are empty, index all pads.
@@ -76,7 +84,6 @@ async function updateAsync(pad) {
  */
 exports.registerRoute = (hookName, args, cb) => {
   if (!searchEngine) {
-    const pluginSettings = settings.ep_search || {};
     searchEngine = createSearchEngine(pluginSettings);
     padSerializer = createPadSerializer(pluginSettings, searchEngine);
     initializeAllPads()
