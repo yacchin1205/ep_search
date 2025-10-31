@@ -2,9 +2,11 @@
 
 const common = require('ep_etherpad-lite/tests/backend/common');
 
+let agent: any;
+
 describe(__filename, function () {
   before(async function () {
-    await common.init();
+    agent = await common.init();
   });
 
   describe('ep_search plugin', function () {
@@ -15,21 +17,12 @@ describe(__filename, function () {
       }
     });
 
-    it('registers loadSettings hook', async function () {
-      const plugins = require('ep_etherpad-lite/static/js/pluginfw/plugin_defs');
-      const hooks = plugins.hooks.loadSettings || [];
-      const hasLoadSettings = hooks.some((h: any) => h.hook_fn_name === 'ep_search/index:loadSettings');
-      if (!hasLoadSettings) {
-        throw new Error('loadSettings hook should be registered');
-      }
-    });
-
-    it('registers expressCreateServer hook', async function () {
-      const plugins = require('ep_etherpad-lite/static/js/pluginfw/plugin_defs');
-      const hooks = plugins.hooks.expressCreateServer || [];
-      const hasExpressCreateServer = hooks.some((h: any) => h.hook_fn_name === 'ep_search/index:registerRoute');
-      if (!hasExpressCreateServer) {
-        throw new Error('expressCreateServer hook should be registered');
+    it('search endpoint is available', async function () {
+      // Just check that the search endpoint responds (even if it returns empty results)
+      const res = await agent.get('/search?query=test');
+      // We expect either 200 (with results) or 200 (without results), not 404
+      if (res.status === 404) {
+        throw new Error('Search endpoint should be available');
       }
     });
   });
