@@ -23,8 +23,8 @@ $('#searchForm')
 
 function doSearch(){
   var searchString = $("#searchInput").val();
-  $("#searchResults").html("");
   $.getJSON('/search/?query='+encodeURI(searchString), function(data) {
+    $("#searchResults").html("");
     // console.log(data);
     $.each(data.docs || [], function(index, doc){
       var value = doc.id;
