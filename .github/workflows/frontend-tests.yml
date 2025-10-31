@@ -2,7 +2,8 @@
 # projects.
 name: "frontend tests powered by Sauce Labs"
 
-on: [push]
+on:
+  workflow_call:
 
 jobs:
   test:
