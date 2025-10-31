@@ -3,6 +3,7 @@
     {
       "name": "ep_search",
       "hooks": {
+        "loadSettings": "ep_search/index:loadSettings",
         "expressCreateServer" : "ep_search/index:registerRoute",
         "eejsBlock_indexWrapper": "ep_search/client",
         "padCreate": "ep_search/index:padChanged",

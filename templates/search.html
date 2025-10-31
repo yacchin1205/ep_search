@@ -1,4 +1,6 @@
-<script src="/static/js/jquery.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+  integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
+  crossorigin="anonymous"></script>
 <br/>
 <label for="searchInput"><h2>Search:</h2></label>
 <form id="searchForm">
@@ -21,8 +23,8 @@ $('#searchForm')
 
 function doSearch(){
   var searchString = $("#searchInput").val();
-  $("#searchResults").html("");
   $.getJSON('/search/?query='+encodeURI(searchString), function(data) {
+    $("#searchResults").html("");
     // console.log(data);
     $.each(data.docs || [], function(index, doc){
       var value = doc.id;
