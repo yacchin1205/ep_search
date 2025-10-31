@@ -62,18 +62,6 @@ jobs:
         name: Install Etherpad core dependencies
         working-directory: ./etherpad-lite
         run: bin/installDeps.sh
-      - name: Debug directory structure
-        run: |
-          echo "=== Current directory ==="
-          pwd
-          echo "=== List current directory ==="
-          ls -la
-          echo "=== List etherpad-lite ==="
-          ls -la etherpad-lite/ || true
-          echo "=== List plugin ==="
-          ls -la plugin/ || true
-          echo "=== From etherpad-lite/bin perspective ==="
-          cd etherpad-lite/bin && pwd && ls -la ../../plugin/ || true
       - name: Link plugin directory
         working-directory: ./plugin
         run: |
@@ -97,17 +85,6 @@ jobs:
         working-directory: ./plugin
         run: |
           pnpm link --global ep_etherpad-lite
-      - name: Debug plugin installation
-        working-directory: ./etherpad-lite
-        run: |
-          echo "=== Check if plugin is installed ==="
-          ls -la node_modules/ | grep ep_search || echo "ep_search not found in node_modules"
-          echo "=== Check plugin directory structure ==="
-          ls -laR node_modules/ep_search/ || echo "ep_search directory not found"
-          echo "=== Check for test files ==="
-          find . -path "*/node_modules/ep_*/static/tests/backend/specs/*.ts" -o -path "*/node_modules/ep_*/static/tests/backend/specs/*.js"
-          echo "=== Run mocha with explicit pattern ==="
-          cd src && ../node_modules/.bin/mocha --dry-run --import=tsx tests/backend/specs/**.ts ../node_modules/ep_*/static/tests/backend/specs/** || echo "Mocha dry-run failed"
       -
         name: Run the backend tests
         working-directory: ./etherpad-lite
