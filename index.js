@@ -54,6 +54,31 @@ async function initializePad(pad) {
   }
 }
 
+const indexTasks = new Map();
+
+/**
+ * Chain index tasks per pad so that search engine updates are applied in
+ * the order of the pad events. A single pad may emit multiple padUpdate
+ * events in quick succession (e.g., setHTML clears and then rewrites the
+ * pad); without ordering, an add for an older revision can overwrite the
+ * latest one.
+ *
+ * @param {string} id ID of the pad.
+ * @param {*} task Async function to be performed for the pad.
+ */
+function enqueueIndexTask(id, task) {
+  const prev = indexTasks.get(id) || Promise.resolve();
+  const next = prev.catch(() => undefined).then(task);
+  indexTasks.set(id, next);
+  const cleanup = () => {
+    if (indexTasks.get(id) === next) {
+      indexTasks.delete(id);
+    }
+  };
+  next.then(cleanup, cleanup);
+  return next;
+}
+
 /**
  * Remove the index for the pad.
  *
@@ -125,10 +150,7 @@ exports.registerRoute = (hookName, args, cb) => {
  */
 exports.padRemoved = (hookName, args, cb) => {
   const { pad } = args;
-  removeAsync(pad)
-      .then(() => {
-          ;
-      })
+  enqueueIndexTask(pad.id, () => removeAsync(pad))
       .catch((err) => {
           console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
       });
@@ -140,10 +162,7 @@ exports.padRemoved = (hookName, args, cb) => {
  */
 exports.padChanged = (hookName, args, cb) => {
   const { pad } = args;
-  updateAsync(pad)
-      .then(() => {
-          ;
-      })
+  enqueueIndexTask(pad.id, () => updateAsync(pad))
       .catch((err) => {
           console.error(logPrefix, 'Error occurred', err.stack || err.message || String(err));
       });
