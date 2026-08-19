@@ -20,10 +20,10 @@ class SolrsearchSearchEngine {
   }
 
   getDefaultSerializer() {
-    return (pad) => {
+    return async (pad) => {
       const atext = (pad.atext || {}).text || '';
       return {
-        indexed: new Date().toISOString(),
+        indexed: new Date(await pad.getLastEdit()).toISOString(),
         id: pad.id,
         _text_: atext,
         atext,

@@ -3,6 +3,7 @@
 // Main job is to check pads periodically for activity and notify owners
 // when someone begins editing and when someone finishes.
 const db = require('ep_etherpad-lite/node/db/DB').db;
+const padManager = require('ep_etherpad-lite/node/db/PadManager');
 const { createPadSerializer, createSearchEngine } = require('./setup');
 
 // Settings -- EDIT THESE IN settings.json not here..
@@ -40,15 +41,17 @@ async function initializeAllPads() {
  * @param {*} pad Pad to be indexed.
  */
 async function initializePad(pad) {
-  const padData = await db.get(pad);
   let id = pad;
   const m = pad.match(/^pad:(.+)$/);
   if (m) {
     id = m[1];
   }
-  await searchEngine.update(padSerializer(
-    Object.assign({ id }, padData),
-  ));
+  const padObject = await padManager.getPad(id);
+  try {
+    await searchEngine.update(await padSerializer(padObject));
+  } finally {
+    padManager.unloadPad(id);
+  }
 }
 
 /**
@@ -75,7 +78,7 @@ async function updateAsync(pad) {
     console.warn(logPrefix, 'Search engine not yet initialized');
     return;
   }
-  await searchEngine.update(padSerializer(pad));
+  await searchEngine.update(await padSerializer(pad));
   await searchEngine.commit();
 }
 
