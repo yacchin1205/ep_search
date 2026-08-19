@@ -3,9 +3,7 @@ FROM etherpad/etherpad:2
 USER root
 
 COPY . /tmp/ep_search
-RUN cd /tmp/ep_search \
-    && ls -la /tmp/ep_search \
-    && npm pack
+RUN ls -la /tmp/ep_search
 
 USER etherpad
 
